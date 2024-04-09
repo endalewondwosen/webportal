@@ -1,0 +1,152 @@
+<template>
+<div>
+    <div class="pagetitle">
+        <h1>Study Level List</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <router-link to="/">Home</router-link>
+                </li>
+                <li class="breadcrumb-item">Study Level</li>
+                <li class="breadcrumb-item active">Data</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Study Level List
+                            <router-link to="/home/create-study_level" class="btn btn-primary" style="float:right"> Add Study Level</router-link>
+
+                        </h5>
+                        <!-- Table with stripped rows -->
+                        <div class="dataTable-wrapper dataTable-loading no-footer sortable searchable fixed-columns">
+                            <div class="dataTable-top">
+                                <div class="dataTable-dropdown"><label><select class="dataTable-selector">
+                                            <option value="5">5</option>
+                                            <option value="10" selected="">10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                            <option value="25">25</option>
+                                        </select> entries per page</label></div>
+                                <div class="dataTable-search"><input class="dataTable-input" placeholder="Search..." type="text"></div>
+                            </div>
+                            <div class="dataTable-container">
+                                <table class="table datatable dataTable-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" data-sortable=""><a href="#" class="dataTable-sorter">#</a></th>
+                                            <th scope="col" data-sortable=""><a href="#" class="dataTable-sorter">Name</a></th>
+                                            <th scope="col" data-sortable=""><a href="#" class="dataTable-sorter">Created_At</a></th>
+                                            <th scope="col" data-sortable=""><a href="#" class="dataTable-sorter">Updated_At</a></th>
+                                            <th width="5%">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(studyLevel,index) in study_levels" :key="studyLevel.id">
+                                            <th scope="row">{{ index+1 }}</th>
+                                            <td>{{ studyLevel.name }}</td>
+                                            <td>{{ studyLevel.created_at }}</td>
+                                            <td>{{ studyLevel.updated_at }}</td>
+                                            <td>
+                                                <router-link :to="{name:'EditStudyLevel',params:{id:studyLevel.id}}" class="btn btn-primary"><i class="ri-edit-2-fill"></i></router-link>
+                                                <button class="btn btn-danger" @click.prevent="deleteStudyLevel(studyLevel.id)"><i class="bi bi-trash-fill"></i></button>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="dataTable-bottom">
+                                <div class="dataTable-info">Showing 1 to 5 of 5 entries</div>
+                                <nav class="dataTable-pagination">
+                                    <ul class="dataTable-pagination-list"></ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <!-- End Table with stripped rows -->
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+</template>
+
+<script>
+export default {
+    mounted() {
+        this.allStudyLevels();
+    },
+    data() {
+        return {
+            study_levels: {}
+        }
+    },
+    methods: {
+        allStudyLevels() {
+            this.axios.get('/api/user/study_levels')
+                .then(({
+                    data
+                }) => {
+                    this.study_levels = data
+                }).catch()
+        },
+        deleteStudyLevel(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.axios.delete('/api/user/study_levels/' + id)
+                        .then(() => {
+                            this.study_levels = this.study_levels.filter(studyLevel => {
+                                return studyLevel.id != id
+
+                            })
+                            //Notification.success(); 
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'Data deleted successfully!'
+                            })
+
+                        }).catch(error => {
+
+                            this.flashMessage.error({
+                                message: error.response.data.message,
+                                time: 5000
+                            });
+
+                        })
+                }
+
+            })
+
+        }
+    },
+
+}
+</script>
+
+<style scoped>
+table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+table tbody {
+    display: table;
+    width: 100%;
+}
+</style>
